@@ -1,46 +1,60 @@
+// récupération de la liste d'avis depuis le serveur HTTP
+import { ajoutListenersAvis, ajoutListenerEnvoyerAvis } from "./avis.js";
+
 // Récupération des pièces depuis le fichier JSON
-const reponse = await fetch('pieces-autos.json');
+// const reponse = await fetch('pieces-autos.json');
+const reponse = await fetch(`http://localhost:8081/pieces/`);
 const pieces = await reponse.json();
 
+// On appel la fonction pour ajouter le listener au formulaire
+ajoutListenerEnvoyerAvis()
+
 function genererPieces(pieces){
-for (let i = 0; i < pieces.length; i++){
-    const article = pieces[i];
-    const sectionFiches = document.querySelector(".fiches");
-    const pieceElement = document.createElement("article");
+    for (let i = 0; i < pieces.length; i++){
+        const article = pieces[i];
+        const sectionFiches = document.querySelector(".fiches");
+        const pieceElement = document.createElement("article");
 
 
+        // Création des balises
+        const imageElement = document.createElement("img");
+        imageElement.src = article.image;
 
-    // Création des balises
-    const imageElement = document.createElement("img");
-    imageElement.src = article.image;
+        const nomElement = document.createElement("h2");
+        nomElement.innerText = article.nom;
 
-    const nomElement = document.createElement("h2");
-    nomElement.innerText = article.nom;
+        const prixElement = document.createElement("p");
+        prixElement.innerText = `Prix: ${article.prix} € (${article.prix < 35 ? "€" : "€€€"})`;
 
-    const prixElement = document.createElement("p");
-    prixElement.innerText = `Prix: ${article.prix} € (${article.prix < 35 ? "€" : "€€€"})`;
+        const categorieElement = document.createElement("p");
+        categorieElement.innerText = article.categorie ?? "(aucune catégorie)";
 
-    const categorieElement = document.createElement("p");
-    categorieElement.innerText = article.categorie ?? "(aucune catégorie)";
+        const descriptionElement = document.createElement("p");
+        descriptionElement.innerText = article.description ?? "(Pas de description pour le moment.)";
 
-    const descriptionElement = document.createElement("p");
-    descriptionElement.innerText = article.description ?? "(Pas de description pour le moment.)";
+        const stockElement = document.createElement("p");
+        stockElement.innerText = article.disponibilite ? "En stock" : "Rupture de stock";
 
-    const stockElement = document.createElement("p");
-    stockElement.innerText = article.disponibilite ? "En stock" : "Rupture de stock";
+        // Ajout du bouton avis
+        const avisBouton = document.createElement("button");
+        avisBouton.dataset.id = article.id;
+        avisBouton.textContent="Afficher les avis";
 
+        // Rattachement de nos balises au DOM
+        sectionFiches.appendChild(pieceElement);
 
-    // Rattachement de nos balises au DOM
-    sectionFiches.appendChild(pieceElement);
+        pieceElement.appendChild(imageElement);
+        pieceElement.appendChild(nomElement);
+        pieceElement.appendChild(prixElement);
+        pieceElement.appendChild(categorieElement);
+        pieceElement.appendChild(descriptionElement);
+        pieceElement.appendChild(stockElement);
 
-    pieceElement.appendChild(imageElement);
-    pieceElement.appendChild(nomElement);
-    pieceElement.appendChild(prixElement);
-    pieceElement.appendChild(categorieElement);
-    pieceElement.appendChild(descriptionElement);
-    pieceElement.appendChild(stockElement);
+        pieceElement.appendChild(avisBouton);
 
-}
+    }
+    // Ajout de la fonction ajoutListenersAvis
+    ajoutListenersAvis();
 }
 genererPieces(pieces);
 
@@ -142,7 +156,7 @@ document.querySelector('.disponible').appendChild(disponibleElements)
 
 
 // Efface le contenu de la balise body et donc l'ecran
-document.querySelector(".fiches").innerHTML = "";
+// document.querySelector(".fiches").innerHTML = "";
 
 const inputPrixMax = document.querySelector('#prix-max');
 inputPrixMax.addEventListener('input', function (){
