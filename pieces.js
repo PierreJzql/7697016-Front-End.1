@@ -1,10 +1,26 @@
 // récupération de la liste d'avis depuis le serveur HTTP
-import { ajoutListenersAvis, ajoutListenerEnvoyerAvis } from "./avis.js";
+import { ajoutListenersAvis, ajoutListenerEnvoyerAvis, afficherAvis } from "./avis.js";
 
-// Récupération des pièces depuis le fichier JSON
-// const reponse = await fetch('pieces-autos.json');
-const reponse = await fetch(`http://localhost:8081/pieces/`);
-const pieces = await reponse.json();
+// Récupération des pièces éventuellement stockées dans le localStorage
+let pieces = window.localStorage.getItem("pieces");
+
+if (pieces === null){
+    // Récupération des pièces depuis le fichier JSON
+    // const reponse = await fetch('pieces-autos.json');
+
+    // Récupération des pièces depuis l'API
+    const reponse = await fetch(`http://localhost:8081/pieces/`);
+    pieces = await reponse.json();
+
+    // Transformation des pièces en JSON
+    const valeurPieces = JSON.stringify(pieces);
+    
+    // Stockage des informations dans le localStorage
+    window.localStorage.setItem("pieces", valeurPieces);
+}else{
+    pieces = JSON.parse(pieces);
+}
+
 
 // On appel la fonction pour ajouter le listener au formulaire
 ajoutListenerEnvoyerAvis()
@@ -57,6 +73,17 @@ function genererPieces(pieces){
     ajoutListenersAvis();
 }
 genererPieces(pieces);
+
+for(let i =0; i<pieces.length;i++){
+    const id = pieces[i].id;
+    const avisJSON = window.localStorage.getItem(`avis-piece-${id}`);
+    const avis = JSON.parse(avisJSON);
+
+    if (avis !== null){
+        const pieceElement = document.querySelector(`article[data-id="${id}"]`);
+        afficherAvis(pieceElement,avis)
+    }
+}
 
 
 // Gestion des boutons
@@ -165,4 +192,10 @@ inputPrixMax.addEventListener('input', function (){
     });
     document.querySelector(".fiches").innerHTML = "";
     genererPieces(piecesFiltrees);
+});
+
+// Ajout du listener pour mettre à jour des données du localStorage
+const boutonMettreAJour = document.querySelector(".btn-maj");
+boutonMettreAJour.addEventListener("click", function () {
+  window.localStorage.removeItem("pieces");
 });
